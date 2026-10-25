@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Забытый — Пробуждение</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b1421;color:#f4eadb;font-family:system-ui;overflow:hidden;touch-action:none}
+#game{display:block;width:100vw;height:72dvh;background:#152437}header{height:8dvh;display:flex;justify-content:space-between;align-items:center;padding:0 16px;font-size:14px}
+.controls{height:20dvh;display:flex;justify-content:space-between;align-items:center;padding:8px 16px;gap:12px}
+.group{display:flex;gap:12px}button{border:1px solid #8c9bab;background:#34465b;color:white;border-radius:18px;width:68px;height:68px;font-size:27px;touch-action:none}
+#act{font-size:15px;width:86px}#status{font-size:12px;color:#d9c9b1;text-align:right}
+</style></head><body><header><strong>ЗАБЫТЫЙ · Пробуждение</strong><span id="status">Найди руку, иглу и нитку</span></header><canvas id="game"></canvas><div class="controls"><div class="group"><button id="left">◀</button><button id="right">▶</button></div><div class="group"><button id="act">ВЗЯТЬ</button><button id="jump">↑</button></div></div>
+<script>
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),status=document.getElementById('status');
+let W=0,H=0;function resize(){W=canvas.width=innerWidth*devicePixelRatio;H=canvas.height=innerHeight*.72*devicePixelRatio;ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);W=innerWidth;H=innerHeight*.72}addEventListener('resize',resize);resize();
+const p={x:65,y:0,vx:0,vy:0,onGround:false},keys={left:false,right:false};let items=[{x:230,name:'Нитка',icon:'🧵',got:false},{x:440,name:'Игла',icon:'🪡',got:false},{x:650,name:'Рука',icon:'🧸',got:false}];let cam=0;const ground=()=>H-70;
+function bind(id,k){const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true;b.setPointerCapture(e.pointerId)});for(const ev of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(ev,()=>keys[k]=false)}
+bind('left','left');bind('right','right');
+document.getElementById('jump').addEventListener('pointerdown',e=>{e.preventDefault();if(p.onGround){p.vy=-10;p.onGround=false}});
+document.getElementById('act').addEventListener('pointerdown',e=>{e.preventDefault();for(const it of items){if(!it.got&&Math.abs(p.x-it.x)<75)it.got=true}const n=items.filter(x=>x.got).length;status.textContent=n===3?'Все найдено! Мишка может зашить руку.':'Найдено предметов: '+n+'/3'});
+function bear(x,y){ctx.save();ctx.translate(x,y);ctx.fillStyle='#697f93';ctx.strokeStyle='#26394a';ctx.lineWidth=2;function oval(a,b,rx,ry){ctx.beginPath();ctx.ellipse(a,b,rx,ry,0,0,Math.PI*2);ctx.fill();ctx.stroke()}
+ctx.fillStyle='#785b43';ctx.fillRect(12,-37,12,30);ctx.fillStyle='#697f93';oval(0,-21,17,22);oval(-12,-2,8,10);oval(11,-2,8,10);oval(-20,-29,7,14);oval(19,-29,7,14);oval(-13,-57,9,9);oval(13,-57,9,9);oval(0,-47,22,21);ctx.fillStyle='#d3d7d8';oval(0,-40,11,8);ctx.fillStyle='#18252f';oval(-8,-50,3.8,4.5);ctx.fillStyle='#28394a';ctx.beginPath();ctx.arc(9,-50,5,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(6,-53);ctx.lineTo(12,-47);ctx.moveTo(12,-53);ctx.lineTo(6,-47);ctx.stroke();ctx.fillStyle='#222';oval(0,-43,3,2);ctx.restore()}
+function frame(){const dt=1;ctx.clearRect(0,0,W,H);const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,'#0e1b30');sky.addColorStop(1,'#34485a');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);cam=Math.max(0,p.x-W*.28);
+for(let i=0;i<32;i++){const x=i*85-cam*.22;ctx.fillStyle=i%3?'#203246':'#263a50';ctx.fillRect(x,H-180-(i%4)*24,75,190);ctx.fillStyle='#b7a06d';for(let j=0;j<3;j++)ctx.fillRect(x+13+j*19,H-145-(i%4)*24,5,7)}
+ctx.fillStyle='#41494d';ctx.fillRect(0,ground(),W,H-ground());ctx.fillStyle='#677078';ctx.fillRect(0,ground(),W,5);
+for(let i=0;i<48;i++){let x=(i*89+Math.sin(performance.now()*.001+i)*12)%W;let y=(i*53+performance.now()*.18)%H;ctx.strokeStyle='#8ca8b755';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-4,y+13);ctx.stroke()}
+for(const it of items)if(!it.got){const x=it.x-cam;ctx.font='27px system-ui';ctx.fillText(it.icon,x-12,ground()-16);ctx.font='12px system-ui';ctx.fillStyle='#f5e6c6';ctx.fillText(it.name,x-16,ground()-49)}
+p.vx=(keys.right?3:0)-(keys.left?3:0);p.x=Math.max(20,Math.min(900,p.x+p.vx));p.vy+=.5;p.y+=p.vy;if(p.y>=ground()){p.y=ground();p.vy=0;p.onGround=true}
+bear(p.x-cam,p.y);ctx.fillStyle='#e5d7c4';ctx.font='13px system-ui';ctx.fillText('Тедди ищет дорогу домой',14,25);requestAnimationFrame(frame)}
+p.y=ground();frame();
+</script></body></html>
